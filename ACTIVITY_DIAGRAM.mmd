@@ -1,0 +1,169 @@
+---
+config:
+  theme: base
+  themeVariables:
+    primaryColor: '#3b82f6'
+    primaryTextColor: '#fff'
+    primaryBorderColor: '#1e293b'
+---
+flowchart TD
+    Start([🚀 Mulai Aplikasi Math-Room])
+    
+    Start --> CheckAuth{User Sudah Login?}
+    
+    CheckAuth -->|Belum| LoginPage[📱 Tampil Halaman Login]
+    CheckAuth -->|Sudah| HomePage[🏠 Tampil Halaman Home]
+    
+    LoginPage --> InputCred[👤 Input Email & Password]
+    InputCred --> ValidateCred{Validasi Kredensial}
+    
+    ValidateCred -->|Invalid| ShowError1[❌ Tampil Error Message]
+    ShowError1 --> LoginPage
+    ValidateCred -->|Valid| SaveSession[💾 Simpan Session ke LocalStorage]
+    SaveSession --> HomePage
+    
+    HomePage --> SelectRole{Pilih Role}
+    
+    %% ========== ALUR GURU ==========
+    SelectRole -->|Guru| TeacherConfig[👨‍🏫 Form Konfigurasi Sesi]
+    TeacherConfig --> InputConfig[📝 Input:<br/>- Topik Materi<br/>- Tingkat Kesulitan<br/>- Max Siswa]
+    InputConfig --> GenerateCode[🎲 Generate Kode Ruangan<br/>6 digit random]
+    GenerateCode --> CreateSession[🔗 Buat Session via Socket.io]
+    CreateSession --> TeacherDashboard[📊 Masuk Dashboard Guru]
+    
+    TeacherDashboard --> WaitStudents[⏳ Tunggu Siswa Join]
+    WaitStudents --> MonitorCanvas[👀 Monitor Canvas Siswa<br/>Real-time via Socket.io]
+    
+    MonitorCanvas --> TeacherAction{Aksi Guru}
+    TeacherAction -->|Monitor Terus| MonitorCanvas
+    TeacherAction -->|End Session| ConfirmEnd{Konfirmasi<br/>End Session?}
+    
+    ConfirmEnd -->|Batal| MonitorCanvas
+    ConfirmEnd -->|Ya| BroadcastEnd[📢 Broadcast 'session_ended'<br/>ke semua siswa]
+    BroadcastEnd --> DisconnectAll[🔌 Disconnect Semua Socket]
+    DisconnectAll --> SaveSessionData[💾 Simpan Data Sesi]
+    SaveSessionData --> BackHome1[🏠 Kembali ke Home]
+    
+    %% ========== ALUR SISWA ==========
+    SelectRole -->|Siswa| StudentInput[🎓 Input Kode Ruangan]
+    StudentInput --> ValidateCode{Validasi<br/>Kode Ruangan}
+    
+    ValidateCode -->|Invalid| ShowError2[❌ Kode Tidak Valid]
+    ShowError2 --> StudentInput
+    ValidateCode -->|Valid| CheckCapacity{Ruangan<br/>Penuh?}
+    
+    CheckCapacity -->|Ya| ShowError3[❌ Ruangan Sudah Penuh]
+    ShowError3 --> StudentInput
+    CheckCapacity -->|Tidak| JoinRoom[🔗 Join Room via Socket.io]
+    
+    JoinRoom --> NotifyTeacher[📢 Notifikasi Guru:<br/> 'Siswa Baru Join']
+    NotifyTeacher --> StudentCanvas[🎨 Tampil Canvas Fullscreen]
+    
+    StudentCanvas --> DrawingLoop{Aktivitas Siswa}
+    
+    DrawingLoop -->|Menggambar| SelectTool[🖌️ Pilih Alat:<br/>- Kuas<br/>- Penghapus<br/>- Color<br/>- Size]
+    SelectTool --> DrawOnCanvas[✏️ Gambar di Canvas]
+    DrawOnCanvas --> EmitDrawing[📡 Emit Drawing Data<br/>via Socket.io]
+    EmitDrawing --> UpdateTeacher[🔄 Update Canvas Guru<br/>Real-time]
+    UpdateTeacher --> DrawingLoop
+    
+    DrawingLoop -->|Undo| UndoAction[↶ Hapus Object Terakhir]
+    UndoAction --> DrawingLoop
+    
+    DrawingLoop -->|Clear Canvas| ClearAction[🗑️ Hapus Semua Object]
+    ClearAction --> DrawingLoop
+    
+    DrawingLoop -->|Simpan Catatan| OpenModal[💾 Tampil Modal<br/>'Save Note']
+    OpenModal --> InputDesc[📝 Input Deskripsi]
+    InputDesc --> ExportImage[📷 Export Canvas ke Image]
+    ExportImage --> SaveToDB[💾 Simpan ke Database<br/>+userEmail +timestamp]
+    SaveToDB --> ShowSuccess[✅ Notifikasi Berhasil]
+    ShowSuccess --> DrawingLoop
+    
+    DrawingLoop -->|Lihat Catatan| OpenSidebar[📂 Buka Sidebar]
+    OpenSidebar --> SwitchTab{Tab Sidebar}
+    
+    SwitchTab -->|Tab Catatan| FetchNotes[📡 Fetch Saved Notes<br/>dari Server]
+    FetchNotes --> DisplayNotes[📋 Tampil Galeri Catatan]
+    DisplayNotes --> NoteAction{Aksi Catatan}
+    
+    NoteAction -->|View| ViewNote[👁️ Lihat Detail Catatan]
+    ViewNote --> DisplayNotes
+    NoteAction -->|Delete| ConfirmDelete{Konfirmasi<br/>Hapus?}
+    ConfirmDelete -->|Ya| DeleteNote[🗑️ Hapus dari Database]
+    DeleteNote --> DisplayNotes
+    ConfirmDelete -->|Batal| DisplayNotes
+    NoteAction -->|Tutup| DrawingLoop
+    
+    SwitchTab -->|Tab Profil| ShowProfile[👤 Tampil Data Profil<br/>- Nama<br/>- Email]
+    ShowProfile --> ProfileAction{Aksi Profil}
+    
+    ProfileAction -->|Edit Profil| EditForm[✏️ Form Edit Data]
+    EditForm --> UpdateProfile[💾 Update Database]
+    UpdateProfile --> ShowProfile
+    ProfileAction -->|Logout| ConfirmLogout{Konfirmasi<br/>Logout?}
+    ProfileAction -->|Tutup| DrawingLoop
+    
+    ConfirmLogout -->|Batal| ShowProfile
+    ConfirmLogout -->|Ya| ClearLocalStorage[🗑️ Hapus LocalStorage]
+    ClearLocalStorage --> DisconnectSocket[🔌 Disconnect Socket]
+    DisconnectSocket --> LoginPage
+    
+    DrawingLoop -->|Leave Room| ConfirmLeave{Konfirmasi<br/>Leave?}
+    ConfirmLeave -->|Batal| DrawingLoop
+    ConfirmLeave -->|Ya| LeaveRoom[🚪 Leave Room Socket]
+    LeaveRoom --> NotifyTeacher2[📢 Notif Guru:<br/>'Siswa Keluar']
+    NotifyTeacher2 --> BackHome2[🏠 Kembali ke Home]
+    
+    %% ========== SESSION ENDED EVENT ==========
+    MonitorCanvas -.->|Receive 'session_ended'| SessionEnded[⚠️ Session Dihentikan Guru]
+    SessionEnded --> ShowNotif[📢 Tampil Notifikasi<br/>'Session Ended']
+    ShowNotif --> AutoLeave[🚪 Auto Keluar dari Room]
+    AutoLeave --> BackHome2
+    
+    BackHome1 --> HomePage
+    BackHome2 --> HomePage
+    
+    HomePage --> ViewSavedNotes{Lihat Catatan<br/>Tersimpan?}
+    ViewSavedNotes -->|Ya| OpenSidebar
+    ViewSavedNotes -->|Tidak| SelectRole
+    
+    %% ========== STYLING ==========
+    style Start fill:#10b981,stroke:#1e293b,color:#fff,stroke-width:3px
+    style LoginPage fill:#3b82f6,stroke:#1e293b,color:#fff
+    style HomePage fill:#8b5cf6,stroke:#1e293b,color:#fff
+    style TeacherDashboard fill:#8b5cf6,stroke:#1e293b,color:#fff
+    style StudentCanvas fill:#3b82f6,stroke:#1e293b,color:#fff
+    
+    style CheckAuth fill:#f59e0b,stroke:#1e293b,color:#fff
+    style ValidateCred fill:#f59e0b,stroke:#1e293b,color:#fff
+    style SelectRole fill:#f59e0b,stroke:#1e293b,color:#fff
+    style ValidateCode fill:#f59e0b,stroke:#1e293b,color:#fff
+    style CheckCapacity fill:#f59e0b,stroke:#1e293b,color:#fff
+    style TeacherAction fill:#f59e0b,stroke:#1e293b,color:#fff
+    style DrawingLoop fill:#f59e0b,stroke:#1e293b,color:#fff
+    style SwitchTab fill:#f59e0b,stroke:#1e293b,color:#fff
+    style NoteAction fill:#f59e0b,stroke:#1e293b,color:#fff
+    style ProfileAction fill:#f59e0b,stroke:#1e293b,color:#fff
+    style ConfirmEnd fill:#f59e0b,stroke:#1e293b,color:#fff
+    style ConfirmDelete fill:#f59e0b,stroke:#1e293b,color:#fff
+    style ConfirmLogout fill:#f59e0b,stroke:#1e293b,color:#fff
+    style ConfirmLeave fill:#f59e0b,stroke:#1e293b,color:#fff
+    style ViewSavedNotes fill:#f59e0b,stroke:#1e293b,color:#fff
+    
+    style ShowError1 fill:#ef4444,stroke:#1e293b,color:#fff
+    style ShowError2 fill:#ef4444,stroke:#1e293b,color:#fff
+    style ShowError3 fill:#ef4444,stroke:#1e293b,color:#fff
+    style SessionEnded fill:#ef4444,stroke:#1e293b,color:#fff
+    
+    style SaveSession fill:#10b981,stroke:#1e293b,color:#fff
+    style GenerateCode fill:#10b981,stroke:#1e293b,color:#fff
+    style CreateSession fill:#10b981,stroke:#1e293b,color:#fff
+    style JoinRoom fill:#10b981,stroke:#1e293b,color:#fff
+    style EmitDrawing fill:#10b981,stroke:#1e293b,color:#fff
+    style UpdateTeacher fill:#10b981,stroke:#1e293b,color:#fff
+    style SaveToDB fill:#10b981,stroke:#1e293b,color:#fff
+    style ShowSuccess fill:#10b981,stroke:#1e293b,color:#fff
+    style NotifyTeacher fill:#10b981,stroke:#1e293b,color:#fff
+    style NotifyTeacher2 fill:#10b981,stroke:#1e293b,color:#fff
+    style BroadcastEnd fill:#10b981,stroke:#1e293b,color:#fff

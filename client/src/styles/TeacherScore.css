@@ -1,0 +1,286 @@
+/* ===== TEACHER SCORE DASHBOARD UI ===== */
+
+.score-dashboard {
+    background: var(--card-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+    animation: fadeIn 0.4s ease-out;
+}
+
+.score-summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.score-summary-header h3 {
+    font-size: 1.5rem;
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.score-summary-header p {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--primary-blue);
+    padding: 0.5rem 1rem;
+    border-radius: 30px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.score-row {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1.5fr;
+    align-items: center;
+    padding: 1.25rem;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    gap: 1.5rem;
+    transition: all 0.2s ease;
+}
+
+.score-row:hover {
+    transform: scale(1.01);
+    border-color: var(--primary-blue);
+    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.1);
+}
+
+.score-user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.user-avatar {
+    width: 45px;
+    height: 45px;
+    background: linear-gradient(135deg, var(--primary-blue), var(--primary-purple));
+    color: white;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1.2rem;
+}
+
+.user-details h4 {
+    margin: 0;
+    font-size: 1.05rem;
+}
+
+.user-details span {
+    font-size: 0.8rem;
+    color: var(--primary-green);
+    font-weight: 600;
+}
+
+.score-stats {
+    display: flex;
+    justify-content: space-around;
+    text-align: center;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.score-progress-bar {
+    width: 100%;
+}
+
+.progress-bg {
+    height: 10px;
+    background: var(--border-color);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-blue), var(--primary-purple));
+    border-radius: 10px;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Tab Switcher Enhancement */
+.tab-switcher {
+    display: flex;
+    background: var(--card-bg);
+    padding: 0.35rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    gap: 0.25rem;
+}
+
+.tab-btn {
+    padding: 0.6rem 1.25rem;
+    border-radius: 9px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.tab-btn.active {
+    background: var(--primary-blue);
+    color: white;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* Responsiveness for Scores */
+@media (max-width: 1024px) {
+    .score-dashboard {
+        padding: 1.5rem;
+        max-width: 100%;
+    }
+
+    .score-row {
+        grid-template-columns: 1fr 1.5fr 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .score-dashboard {
+        padding: 1rem;
+        border-radius: 16px;
+        margin: 0 0.5rem;
+    }
+
+    .score-summary-header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+        padding-bottom: 1rem;
+    }
+
+    .score-summary-header h3 {
+        font-size: 1.25rem;
+    }
+
+    .score-row {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+        padding: 1rem;
+    }
+
+    .score-user-info {
+        justify-content: center;
+    }
+
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+
+    .user-details h4 {
+        font-size: 1rem;
+    }
+
+    .score-stats {
+        justify-content: center;
+        gap: 1.5rem;
+    }
+
+    .stat-label {
+        font-size: 0.7rem;
+    }
+
+    .stat-value {
+        font-size: 1rem;
+    }
+
+    .tab-switcher {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .tab-btn {
+        padding: 0.5rem 0.875rem;
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .score-dashboard {
+        padding: 0.75rem;
+        margin: 0;
+        border-radius: 12px;
+    }
+
+    .score-summary-header h3 {
+        font-size: 1.1rem;
+    }
+
+    .score-summary-header p {
+        font-size: 0.85rem;
+        padding: 0.4rem 0.8rem;
+    }
+
+    .score-row {
+        padding: 0.75rem;
+        border-radius: 12px;
+        gap: 0.5rem;
+    }
+
+    .user-avatar {
+        width: 35px;
+        height: 35px;
+        font-size: 0.9rem;
+        border-radius: 8px;
+    }
+
+    .score-stats {
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .stat-item {
+        min-width: 60px;
+    }
+
+    .progress-bg {
+        height: 8px;
+    }
+
+    .tab-btn {
+        padding: 0.4rem 0.65rem;
+        font-size: 0.8rem;
+    }
+}

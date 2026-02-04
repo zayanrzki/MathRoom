@@ -1,0 +1,13 @@
+flowchart TD
+    Start([🚀 Mulai]) --> Login[🔑 Login Siswa]
+    Login --> Input[🔢 Masukkan Kode<br/>dari Guru]
+    Input --> Join{🔓 Kode Valid?}
+    Join -->|Tidak| Input
+    Join -->|Ya| Canvas[🎨 Buka Smart Canvas]
+    Canvas --> Activity[✏️ Menggambar &<br/>Gunakan Alat Matematika]
+    Activity --> Sync((📡 Real-time Sync<br/>ke Layar Guru))
+    Activity --> Save{💾 Simpan Catatan?}
+    Save -->|Ya| DB[💾 Simpan ke Galeri]
+    Save -->|Tidak| Leave
+    DB --> Leave[🚪 Keluar Ruangan]
+    Leave --> Home([🏠 Kembali ke Home])

@@ -1,0 +1,482 @@
+/* ===== STUDENT PROBLEM BANK UI ===== */
+
+/* UI adjustments */
+
+/* Base components */
+
+/* Layout adjustments */
+.canvas-problem-wrapper {
+    display: flex;
+    flex: 1;
+    height: calc(100vh - 65px);
+    /* Adjusted for 65px top bar */
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.canvas-problem-wrapper.with-sidebar {
+    margin-left: var(--sidebar-width);
+    width: calc(100% - var(--sidebar-width));
+}
+
+.canvas-problem-wrapper.fullwidth {
+    margin-left: 0;
+    width: 100%;
+}
+
+.actual-canvas-part {
+    flex: 1;
+    min-width: 0;
+    /* CRITICAL: Allows flex item to shrink below content size */
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    background: #ffffff;
+    /* Explicit white background for the canvas area */
+}
+
+.actual-canvas-part.contracted {
+    flex: 1;
+}
+
+.canvas-area.with-problem-panel {
+    display: flex !important;
+    flex-direction: row;
+}
+
+.problem-panel {
+    width: 450px;
+    min-width: 450px;
+    flex-shrink: 0;
+    /* Don't let the problem panel shrink */
+    background: var(--bg-primary);
+    border-left: 2px solid var(--border-color);
+    height: 100%;
+    overflow-y: auto;
+    position: relative;
+    z-index: 100;
+    /* Ensure it's above canvas */
+    box-shadow: -10px 0 20px rgba(0, 0, 0, 0.3);
+    animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.room-header {
+    z-index: 1000;
+    /* Ensure header is always on top */
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+    }
+
+    to {
+        transform: translateX(0);
+    }
+}
+
+/* Problem UI Components */
+.student-problem-container {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    height: 100%;
+}
+
+.problem-card {
+    background: var(--card-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.problem-header {
+    background: rgba(59, 130, 246, 0.1);
+    padding: 1rem 1.5rem;
+    border-bottom: 2px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.problem-number {
+    font-weight: 800;
+    color: var(--primary-blue);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.problem-topic {
+    background: var(--primary-purple);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.problem-body {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.question-text {
+    font-size: 1.15rem;
+    line-height: 1.6;
+    color: var(--text-primary);
+    font-weight: 500;
+    white-space: pre-wrap;
+}
+
+.options-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+}
+
+.option-btn {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: var(--bg-primary);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    color: var(--text-primary);
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.option-btn:hover:not(.disabled) {
+    border-color: var(--primary-blue);
+    background: rgba(59, 130, 246, 0.05);
+    transform: translateX(5px);
+}
+
+.option-btn.selected {
+    border-color: var(--primary-blue);
+    background: rgba(59, 130, 246, 0.1);
+    box-shadow: 0 0 0 1px var(--primary-blue);
+}
+
+.opt-letter {
+    width: 32px;
+    height: 32px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-weight: 800;
+    color: var(--text-secondary);
+}
+
+.option-btn.selected .opt-letter {
+    background: var(--primary-blue);
+    color: white;
+    border-color: var(--primary-blue);
+}
+
+.opt-content {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+/* Correct/Wrong Highlighting */
+.correct-highlight {
+    border-color: var(--primary-green) !important;
+    background: rgba(34, 197, 94, 0.1) !important;
+}
+
+.wrong-highlight {
+    border-color: #ef4444 !important;
+    background: rgba(239, 68, 68, 0.1) !important;
+}
+
+.correct-highlight .opt-letter {
+    background: var(--primary-green);
+    color: white;
+}
+
+.wrong-highlight .opt-letter {
+    background: #ef4444;
+    color: white;
+}
+
+.submit-answer-btn {
+    background: linear-gradient(135deg, var(--primary-blue), var(--primary-purple));
+    color: white;
+    border: none;
+    padding: 1.25rem;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+}
+
+.submit-answer-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: grayscale(1);
+}
+
+.result-feedback {
+    padding: 1.25rem;
+    border-radius: 12px;
+    font-weight: 600;
+    animation: slideInUp 0.3s ease-out;
+}
+
+.result-feedback.correct {
+    background: rgba(34, 197, 94, 0.15);
+    color: var(--primary-green);
+    border: 1px solid var(--primary-green);
+}
+
+.result-feedback.wrong {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border: 1px solid #ef4444;
+}
+
+.explanation {
+    margin-top: 0.75rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.next-prob-btn {
+    width: 100%;
+    background: var(--card-bg);
+    border: 2px solid var(--primary-blue);
+    color: var(--primary-blue);
+    padding: 1rem;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.next-prob-btn:hover {
+    background: var(--primary-blue);
+    color: white;
+}
+
+.student-score-summary {
+    text-align: center;
+    padding: 1rem;
+    background: var(--card-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    color: var(--text-secondary);
+}
+
+.student-score-summary b {
+    color: var(--primary-blue);
+    font-size: 1.2rem;
+}
+
+@keyframes slideInUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Responsiveness */
+@media (max-width: 1024px) {
+    .canvas-area.with-problem-panel {
+        flex-direction: column;
+    }
+
+    .problem-panel {
+        width: 100%;
+        min-width: 100%;
+        border-left: none;
+        border-top: 2px solid var(--border-color);
+        height: 50vh;
+        max-height: 400px;
+        animation: slideInUp 0.3s ease;
+    }
+
+    .canvas-problem-wrapper.with-sidebar {
+        margin-left: 0;
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .top-tab-wrapper {
+        flex-wrap: wrap;
+        justify-content: center;
+        padding: 0.25rem;
+    }
+
+    .nav-tab-btn {
+        padding: 0.5rem 0.875rem;
+        font-size: 0.85rem;
+    }
+
+    .canvas-problem-wrapper {
+        height: calc(100vh - 60px);
+    }
+
+    .problem-panel {
+        height: 45vh;
+        max-height: 350px;
+    }
+
+    .student-problem-container {
+        padding: 1rem;
+        gap: 1rem;
+    }
+
+    .problem-card {
+        border-radius: 16px;
+    }
+
+    .problem-header {
+        padding: 0.75rem 1rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .problem-number {
+        font-size: 0.8rem;
+    }
+
+    .problem-topic {
+        font-size: 0.75rem;
+        padding: 0.2rem 0.6rem;
+    }
+
+    .problem-body {
+        padding: 1rem;
+        gap: 1rem;
+    }
+
+    .question-text {
+        font-size: 1rem;
+        line-height: 1.5;
+    }
+
+    .option-btn {
+        padding: 0.75rem 1rem;
+        gap: 0.75rem;
+    }
+
+    .opt-letter {
+        width: 28px;
+        height: 28px;
+        font-size: 0.9rem;
+    }
+
+    .opt-content {
+        font-size: 0.9rem;
+    }
+
+    .submit-answer-btn {
+        padding: 1rem;
+        font-size: 1rem;
+    }
+
+    .result-feedback {
+        padding: 1rem;
+        font-size: 0.9rem;
+    }
+
+    .explanation {
+        font-size: 0.85rem;
+    }
+
+    .next-prob-btn {
+        padding: 0.875rem;
+        font-size: 0.9rem;
+    }
+
+    .student-score-summary {
+        padding: 0.75rem;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .nav-tab-btn {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.75rem;
+    }
+
+    .problem-panel {
+        height: 40vh;
+        max-height: 300px;
+    }
+
+    .student-problem-container {
+        padding: 0.75rem;
+        gap: 0.75rem;
+    }
+
+    .problem-header {
+        padding: 0.5rem 0.75rem;
+    }
+
+    .problem-number {
+        font-size: 0.75rem;
+    }
+
+    .problem-body {
+        padding: 0.75rem;
+        gap: 0.75rem;
+    }
+
+    .question-text {
+        font-size: 0.9rem;
+    }
+
+    .options-grid {
+        gap: 0.5rem;
+    }
+
+    .option-btn {
+        padding: 0.6rem 0.75rem;
+        gap: 0.5rem;
+    }
+
+    .opt-letter {
+        width: 24px;
+        height: 24px;
+        font-size: 0.8rem;
+    }
+
+    .opt-content {
+        font-size: 0.85rem;
+    }
+
+    .submit-answer-btn {
+        padding: 0.875rem;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+    }
+
+    .result-feedback {
+        padding: 0.75rem;
+        font-size: 0.85rem;
+    }
+}

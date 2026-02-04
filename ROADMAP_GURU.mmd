@@ -1,0 +1,12 @@
+sequenceDiagram
+    autonumber
+    actor Guru as 👨‍🏫 GURU
+    participant App as 💻 SISTEM MATH-ROOM
+
+    Note over Guru, App: ALUR UTAMA GURU
+    Guru->>App: 1. Login Akun
+    Guru->>App: 2. Konfigurasi & Buat Ruangan
+    Note right of App: Kode Ruangan Aktif
+    Guru->>App: 3. Masuk Dashboard Monitoring
+    App-->>Guru: Tampil Live Canvas Semua Siswa
+    Guru->>App: 4. Tutup Sesi (End Session)

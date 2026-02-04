@@ -1,0 +1,11 @@
+flowchart TD
+    Start([🚀 Mulai]) --> Login[🔑 Login Guru]
+    Login --> Config[📝 Atur Ruangan<br/>Topik & Kesulitan]
+    Config --> Create[🎲 Generate Kode &<br/>Buka Ruangan]
+    Create --> Dashboard[📊 Dashboard Monitoring]
+    Dashboard --> Monitor{👀 Siswa Aktif?}
+    Monitor -->|Ya| View[📱 Pantau Canvas,<br/>Kamera & Mic]
+    Monitor -->|Tidak| Dashboard
+    View --> Action{Aksi Guru}
+    Action -->|Tutup Sesi| End([🛑 Sesi Berakhir])
+    Action -->|Teruskan| View

@@ -1,0 +1,25 @@
+%% { init: { 'theme': 'base', 'themeVariables': { 'primaryColor': '#3b82f6', 'primaryTextColor': '#fff' } } } %%
+sequenceDiagram
+    autonumber
+    
+    %% SEKSI GURU
+    Note over Guru, Siswa: --- ROADMAP ALUR GURU ---
+    actor Guru as 👨‍🏫 Guru
+    participant App as 💻 Sistem Math-Room
+    actor Siswa as 🎓 Siswa
+
+    Guru->>App: 1. Login Akun
+    Guru->>App: 2. Buat Ruangan
+    Note right of App: Kode Ruangan Dibuat
+    Guru->>App: 3. Dashboard Monitoring
+    App-->>Guru: Tampil Live Drawing
+    Guru->>App: 4. End Session
+
+    %% SEKSI SISWA
+    Note over Guru, Siswa: --- ROADMAP ALUR SISWA ---
+    Siswa->>App: 1. Login Akun
+    Siswa->>App: 2. Masukkan Kode
+    Siswa->>App: 3. Aktivitas Menggambar
+    App-->>Guru: Update Real-time
+    Siswa->>App: 4. Simpan Catatan (Opsional)
+    Siswa->>App: 5. Keluar Ruangan

@@ -1,0 +1,134 @@
+---
+config:
+  theme: base
+  themeVariables:
+    primaryColor: '#3b82f6'
+    primaryTextColor: '#fff'
+    primaryBorderColor: '#1e293b'
+---
+flowchart TB
+    subgraph System["🎯 SISTEM MATH-ROOM"]
+        direction TB
+        
+        subgraph Auth["MODUL AUTENTIKASI"]
+            UC1["UC-01: Login ke Sistem<br/>- Input email & password<br/>- Validasi kredensial<br/>- Redirect ke dashboard"]
+            UC2["UC-02: Logout dari Sistem<br/>- Hapus session<br/>- Kembali ke halaman login"]
+            UC3["UC-03: Registrasi Akun Baru<br/>- Input data pengguna<br/>- Validasi email unik<br/>- Simpan ke database"]
+        end
+        
+        subgraph TeacherModule["MODUL GURU"]
+            UC4["UC-04: Buat Sesi Kelas<br/>- Set topik materi<br/>- Set tingkat kesulitan<br/>- Set max jumlah siswa<br/>- Generate kode ruangan"]
+            UC5["UC-05: Lihat Dashboard Guru<br/>- Monitor semua siswa (grid view)<br/>- Lihat canvas siswa real-time<br/>- Lihat info sesi aktif"]
+            UC6["UC-06: Akhiri Sesi Kelas<br/>- Disconnect semua siswa<br/>- Simpan data sesi<br/>- Kembali ke home"]
+            UC7["UC-07: Monitor Aktivitas Siswa<br/>- Lihat gambar siswa<br/>- Track waktu aktif<br/>- Identifikasi siswa join/leave"]
+        end
+        
+        subgraph StudentModule["MODUL SISWA"]
+            UC8["UC-08: Join Sesi dengan Kode<br/>- Input kode ruangan (6 digit)<br/>- Validasi kode<br/>- Masuk ke ruangan"]
+            UC9["UC-09: Menggambar di Canvas<br/>- Pilih alat gambar<br/>- Atur ukuran & warna<br/>- Gambar solusi matematika<br/>- Sinkronisasi ke guru"]
+            UC10["UC-10: Gunakan Alat Gambar<br/>- Kuas/Pensil<br/>- Penghapus<br/>- Undo<br/>- Clear canvas<br/>- Color picker"]
+            UC11["UC-11: Simpan Catatan<br/>- Export canvas ke image<br/>- Input deskripsi<br/>- Simpan ke database"]
+            UC12["UC-12: Lihat Catatan Tersimpan<br/>- Browse galeri catatan<br/>- Filter by date<br/>- Lihat detail catatan<br/>- Hapus catatan"]
+            UC13["UC-13: Keluar dari Ruangan<br/>- Disconnect dari sesi<br/>- Kembali ke home"]
+        end
+        
+        subgraph ProfileModule["MODUL PROFIL"]
+            UC14["UC-14: Lihat Profil<br/>- Lihat nama & email<br/>- Lihat statistik aktivitas"]
+            UC15["UC-15: Edit Profil<br/>- Update nama<br/>- Update password<br/>- Update foto profil (future)"]
+        end
+        
+        subgraph RealTimeModule["MODUL REAL-TIME"]
+            UC16["UC-16: Sinkronisasi Canvas<br/>- Emit drawing data via Socket.io<br/>- Update canvas guru real-time<br/>- Handle disconnect/reconnect"]
+            UC17["UC-17: Notifikasi Real-time<br/>- Siswa join/leave room<br/>- Guru end session<br/>- System announcements"]
+        end
+        
+        subgraph FutureModules["MODUL MASA DEPAN (FASE 2-3)"]
+            UC18["UC-18: Video Conference<br/>- Enable/disable camera<br/>- Enable/disable mic<br/>- Switch layout view"]
+            UC19["UC-19: Screen Sharing<br/>- Share screen guru<br/>- Presentation mode<br/>- Annotate shared screen"]
+            UC20["UC-20: Chat & Messaging<br/>- Send text message<br/>- Private chat<br/>- Group chat"]
+            UC21["UC-21: Akses Materi Pembelajaran<br/>- Browse topik (SMK/SMA/Kuliah)<br/>- Kerjakan latihan soal<br/>- Lihat solusi step-by-step"]
+            UC22["UC-22: Lihat Analytics<br/>- Progress belajar siswa<br/>- Laporan performa<br/>- Time tracking"]
+        end
+    end
+    
+    subgraph Actors["👥 AKTOR SISTEM"]
+        Teacher["👨‍🏫 GURU<br/>- Membuat & mengelola sesi<br/>- Monitor siswa<br/>- Menilai hasil belajar"]
+        Student["🎓 SISWA<br/>- Join sesi<br/>- Menggambar solusi<br/>- Simpan catatan"]
+        System["⚙️ SISTEM<br/>- Socket.io Server<br/>- MySQL Database<br/>- WebRTC (future)"]
+    end
+    
+    %% Koneksi Guru
+    Teacher -.->|Login| UC1
+    Teacher -.->|Logout| UC2
+    Teacher -.->|Buat Sesi| UC4
+    Teacher -.->|Monitor| UC5
+    Teacher -.->|Monitor| UC7
+    Teacher -.->|Akhiri| UC6
+    Teacher -.->|Lihat Profil| UC14
+    Teacher -.->|Edit Profil| UC15
+    Teacher -.->|Future| UC18
+    Teacher -.->|Future| UC19
+    Teacher -.->|Future| UC22
+    
+    %% Koneksi Siswa
+    Student -.->|Login| UC1
+    Student -.->|Logout| UC2
+    Student -.->|Registrasi| UC3
+    Student -.->|Join| UC8
+    Student -.->|Menggambar| UC9
+    Student -.->|Gunakan Alat| UC10
+    Student -.->|Simpan| UC11
+    Student -.->|Lihat Catatan| UC12
+    Student -.->|Keluar| UC13
+    Student -.->|Lihat Profil| UC14
+    Student -.->|Edit Profil| UC15
+    Student -.->|Future| UC18
+    Student -.->|Future| UC20
+    Student -.->|Future| UC21
+    
+    %% Koneksi Sistem
+    UC9 -.->|Gunakan| UC16
+    UC4 -.->|Generate| UC16
+    UC8 -.->|Validasi| UC16
+    UC6 -.->|Broadcast| UC17
+    UC8 -.->|Notif| UC17
+    UC13 -.->|Notif| UC17
+    
+    %% Include Relationships
+    UC9 -->|include| UC10
+    UC5 -->|include| UC16
+    UC4 -->|include| UC17
+    
+    style Teacher fill:#8b5cf6,stroke:#1e293b,color:#fff,stroke-width:3px
+    style Student fill:#3b82f6,stroke:#1e293b,color:#fff,stroke-width:3px
+    style System fill:#f59e0b,stroke:#1e293b,color:#fff,stroke-width:3px
+    
+    style Auth fill:#1e293b,stroke:#3b82f6,color:#cbd5e1
+    style TeacherModule fill:#1e293b,stroke:#8b5cf6,color:#cbd5e1
+    style StudentModule fill:#1e293b,stroke:#3b82f6,color:#cbd5e1
+    style ProfileModule fill:#1e293b,stroke:#10b981,color:#cbd5e1
+    style RealTimeModule fill:#1e293b,stroke:#f59e0b,color:#cbd5e1
+    style FutureModules fill:#1e293b,stroke:#ef4444,color:#cbd5e1
+    
+    style UC1 fill:#334155,stroke:#3b82f6,color:#f1f5f9
+    style UC2 fill:#334155,stroke:#3b82f6,color:#f1f5f9
+    style UC3 fill:#334155,stroke:#3b82f6,color:#f1f5f9
+    style UC4 fill:#334155,stroke:#8b5cf6,color:#f1f5f9
+    style UC5 fill:#334155,stroke:#8b5cf6,color:#f1f5f9
+    style UC6 fill:#334155,stroke:#8b5cf6,color:#f1f5f9
+    style UC7 fill:#334155,stroke:#8b5cf6,color:#f1f5f9
+    style UC8 fill:#334155,stroke:#3b82f6,color:#f1f5f9
+    style UC9 fill:#334155,stroke:#3b82f6,color:#f1f5f9
+    style UC10 fill:#334155,stroke:#3b82f6,color:#f1f5f9
+    style UC11 fill:#334155,stroke:#10b981,color:#f1f5f9
+    style UC12 fill:#334155,stroke:#10b981,color:#f1f5f9
+    style UC13 fill:#334155,stroke:#3b82f6,color:#f1f5f9
+    style UC14 fill:#334155,stroke:#10b981,color:#f1f5f9
+    style UC15 fill:#334155,stroke:#10b981,color:#f1f5f9
+    style UC16 fill:#334155,stroke:#f59e0b,color:#f1f5f9
+    style UC17 fill:#334155,stroke:#f59e0b,color:#f1f5f9
+    style UC18 fill:#334155,stroke:#ef4444,color:#f1f5f9
+    style UC19 fill:#334155,stroke:#ef4444,color:#f1f5f9
+    style UC20 fill:#334155,stroke:#ef4444,color:#f1f5f9
+    style UC21 fill:#334155,stroke:#ef4444,color:#f1f5f9
+    style UC22 fill:#334155,stroke:#ef4444,color:#f1f5f9

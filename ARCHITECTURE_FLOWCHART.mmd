@@ -1,0 +1,110 @@
+---
+config:
+  theme: base
+  themeVariables:
+    primaryColor: '#3b82f6'
+    primaryTextColor: '#fff'
+    primaryBorderColor: '#1e293b'
+    lineColor: '#8b5cf6'
+    secondaryColor: '#8b5cf6'
+    tertiaryColor: '#f59e0b'
+---
+flowchart TD
+    Start(["🎯 Mulai Proyek Math-Room"])
+    
+    Start --> Vision["📋 Definisi Visi<br/>Platform Papan Tulis Digital<br/>untuk Pendidikan Matematika"]
+    
+    Vision --> TechStack{"🛠️ Pemilihan Teknologi"}
+    
+    TechStack --> BackendStack["Backend: Node.js + Express<br/>WebSocket: Socket.io<br/>Database: MySQL"]
+    TechStack --> FrontendStack["Frontend: React + Vite<br/>Canvas: Fabric.js v5<br/>Styling: CSS Custom"]
+    
+    BackendStack --> Phase1["⚡ FASE 1: FONDASI DASAR<br/><b>Status: SEDANG DIKERJAKAN</b>"]
+    FrontendStack --> Phase1
+    
+    Phase1 --> Auth["👤 Sistem Autentikasi<br/>- Login Email/Password<br/>- Manajemen Sesi<br/>- Protected Routes"]
+    
+    Phase1 --> RoomManagement["🏫 Manajemen Ruangan<br/>- Generate Kode Ruangan (6 karakter)<br/>- Konfigurasi Sesi<br/>- Maksimal 42 Siswa/Ruangan"]
+    
+    Phase1 --> Drawing["🎨 Sistem Menggambar<br/>- Canvas Fabric.js<br/>- Sinkronisasi Real-time via Socket.io<br/>- Background Pola Grid"]
+    
+    Auth --> Tools["🖌️ Alat Menggambar"]
+    RoomManagement --> Tools
+    Drawing --> Tools
+    
+    Tools --> ToolsList["✓ Kuas/Pensil<br/>✓ Pemilih Warna<br/>✓ Ukuran Kuas<br/>✓ Mode Penghapus<br/>✓ Fungsi Undo<br/>✓ Hapus Canvas"]
+    
+    ToolsList --> RoleSystem{"👥 Tampilan Berdasarkan Role"}
+    
+    RoleSystem --> Teacher["👨‍🏫 Dashboard Guru<br/>- Tampilan Grid (42 siswa)<br/>- Monitor Canvas Real-time<br/>- Kontrol Sesi<br/>- Akhiri Sesi"]
+    
+    RoleSystem --> Student["🎓 Ruangan Siswa<br/>- Canvas Fullscreen<br/>- Sidebar Alat Gambar<br/>- Fitur Simpan Catatan<br/>- Keluar Ruangan"]
+    
+    Teacher --> Storage["💾 Penyimpanan Data"]
+    Student --> Storage
+    
+    Storage --> SavedNotes["📝 Sistem Catatan Tersimpan<br/>- Export Screenshot Canvas<br/>- Penyimpanan MySQL<br/>- Pengambilan per Siswa<br/>- Tampilan Galeri di Sidebar"]
+    
+    SavedNotes --> UIPolish["✨ UI/UX Premium<br/>- Tema Gelap<br/>- Warna Gradien<br/>- Animasi Halus<br/>- Layout Responsif<br/>- Navigasi Sidebar"]
+    
+    UIPolish --> Phase1Complete{"✅ Fase 1 Selesai?"}
+    
+    Phase1Complete -->|Ya| Phase2["🎥 FASE 2: KOMUNIKASI<br/><b>Status: TERENCANA</b>"]
+    Phase1Complete -->|Belum| Refine["🔧 Perbaikan & Testing"]
+    
+    Refine --> Phase1Complete
+    
+    Phase2 --> WebRTC["📹 Integrasi WebRTC<br/>- Video/Audio Peer-to-peer<br/>- Layout Grid untuk Peserta<br/>- Kontrol Mic/Kamera<br/>- Opsi Push-to-talk"]
+    
+    Phase2 --> ScreenShare["🖥️ Berbagi Layar<br/>- Screen Share Guru<br/>- Screen Share Siswa<br/>- Mode Presentasi"]
+    
+    Phase2 --> Chat["💬 Sistem Chat Teks<br/>- Pesan Real-time<br/>- Pesan Pribadi<br/>- Chat Grup"]
+    
+    WebRTC --> Phase2Complete{"✅ Fase 2 Selesai?"}
+    ScreenShare --> Phase2Complete
+    Chat --> Phase2Complete
+    
+    Phase2Complete -->|Ya| Phase3["📚 FASE 3: PERPUSTAKAAN KONTEN<br/><b>Status: MASA DEPAN</b>"]
+    
+    Phase3 --> Curriculum["📖 Kurikulum Terstruktur"]
+    
+    Curriculum --> SMK["🏫 Modul SMK/SMA<br/>- Trigonometri<br/>- Kalkulus Dasar<br/>- Statistik<br/>- Aljabar<br/>- Geometri Analitik"]
+    
+    Curriculum --> Kuliah["🎓 Modul Kuliah Dasar<br/>- Kalkulus Lanjut<br/>- Aljabar Linear<br/>- Persamaan Diferensial<br/>- Matematika Diskrit"]
+    
+    SMK --> Features["🎯 Fitur Pembelajaran"]
+    Kuliah --> Features
+    
+    Features --> Interactive["✓ Set Soal Interaktif<br/>✓ Rendering LaTeX<br/>✓ Solusi Step-by-step<br/>✓ Lembar Latihan<br/>✓ Kuis & Penilaian"]
+    
+    Interactive --> Analytics["📊 Dashboard Analitik<br/>- Tracking Progress Siswa<br/>- Laporan Performa<br/>- Analisis Waktu Belajar<br/>- Tingkat Penyelesaian"]
+    
+    Analytics --> Phase3Complete{"✅ Fase 3 Selesai?"}
+    
+    Phase3Complete -->|Ya| Advanced["🚀 FITUR LANJUTAN<br/><b>Status: VISI JANGKA PANJANG</b>"]
+    
+    Advanced --> AI["🤖 Integrasi AI<br/>- Auto-grading<br/>- Petunjuk Pintar<br/>- Jalur Belajar Personal"]
+    
+    Advanced --> Gamification["🎮 Gamifikasi<br/>- Poin & Badge<br/>- Papan Peringkat<br/>- Pencapaian"]
+    
+    Advanced --> Mobile["📱 Aplikasi Mobile<br/>- iOS/Android<br/>- Gambar dengan Touch<br/>- Mode Offline"]
+    
+    AI --> Production["🌐 DEPLOYMENT PRODUKSI"]
+    Gamification --> Production
+    Mobile --> Production
+    
+    Production --> Scale["⚡ Skalabilitas<br/>- Load Balancing<br/>- Distribusi CDN<br/>- Optimasi Database<br/>- Clustering WebSocket"]
+    
+    Scale --> Monitor["📈 Monitoring & Pemeliharaan<br/>- Tracking Error<br/>- Metrik Performa<br/>- Analitik Pengguna<br/>- Update Berkala"]
+    
+    Monitor --> Success(["🎉 Platform Math-Room Live!"])
+    
+    style Start fill:#3b82f6,stroke:#1e293b,color:#fff
+    style Phase1 fill:#8b5cf6,stroke:#1e293b,color:#fff
+    style Phase2 fill:#f59e0b,stroke:#1e293b,color:#fff
+    style Phase3 fill:#10b981,stroke:#1e293b,color:#fff
+    style Advanced fill:#ef4444,stroke:#1e293b,color:#fff
+    style Success fill:#10b981,stroke:#1e293b,color:#fff
+    style Phase1Complete fill:#22c55e,stroke:#1e293b,color:#fff
+    style Phase2Complete fill:#22c55e,stroke:#1e293b,color:#fff
+    style Phase3Complete fill:#22c55e,stroke:#1e293b,color:#fff

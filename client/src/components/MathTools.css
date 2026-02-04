@@ -1,0 +1,171 @@
+/* ===== MATH TOOLS COMPONENT ===== */
+
+.math-tools {
+    margin-bottom: 1rem;
+}
+
+.math-tools-toggle {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.math-tools-toggle:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4);
+}
+
+.math-tools-toggle.active {
+    background: linear-gradient(135deg, #d97706, #b45309);
+    border-color: #d97706;
+}
+
+.math-tools-content {
+    margin-top: 0.75rem;
+    background: var(--bg-primary);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    padding: 0.75rem;
+    animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.math-tools-desc {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.75rem;
+    color: var(--accent-orange);
+    text-align: center;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.math-tools-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.math-tool-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--card-bg);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.math-tool-item:hover {
+    border-color: var(--tool-color);
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateX(5px);
+}
+
+.math-tool-item.active {
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 0 1px var(--tool-color), 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.tool-icon {
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+.tool-name {
+    flex: 1;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.tool-active-badge {
+    background: var(--primary-green);
+    color: white;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.math-tools-hint {
+    margin-top: 0.75rem;
+    padding: 0.5rem;
+    background: rgba(59, 130, 246, 0.1);
+    border-radius: 8px;
+    border-left: 3px solid var(--primary-blue);
+}
+
+.math-tools-hint p {
+    margin: 0;
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.math-tools-hint p:first-child {
+    margin-bottom: 0.25rem;
+}
+
+.clear-tools-btn {
+    width: 100%;
+    margin-top: 0.75rem;
+    padding: 0.6rem;
+    border: 2px solid #ef4444;
+    border-radius: 8px;
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.clear-tools-btn:hover {
+    background: #ef4444;
+    color: white;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .math-tool-item {
+        padding: 0.6rem 0.75rem;
+    }
+
+    .tool-icon {
+        font-size: 1.25rem;
+    }
+
+    .tool-name {
+        font-size: 0.8rem;
+    }
+}

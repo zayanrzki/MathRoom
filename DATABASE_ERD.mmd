@@ -1,0 +1,46 @@
+erDiagram
+    %% Math Room Application - Entity Relationship Diagram
+    %% Database: MySQL
+    %% Current Implementation: Email-based authentication with persistent notes storage
+
+    STUDENT_NOTES {
+        int id PK "Auto-increment primary key"
+        varchar student_email "Student email address"
+        varchar student_name "Student display name"
+        varchar room_code "Room code where note was created"
+        varchar title "Note title"
+        longtext canvas_data "Base64 encoded canvas image (PNG)"
+        longtext thumbnail "Base64 encoded thumbnail (optional)"
+        datetime created_at "Timestamp when note was created"
+    }
+
+    USERS_LOCALSTORAGE {
+        varchar userEmail PK "Stored in browser localStorage"
+        varchar userName "User display name in localStorage"
+    }
+
+    ROOMS_EPHEMERAL {
+        varchar roomId PK "Socket.IO room identifier"
+        varchar teacherSocketId "Teacher's socket connection ID"
+        json students "Map of username to socketId"
+        datetime createdAt "When room was created (in-memory)"
+    }
+
+    SOCKET_CONNECTIONS {
+        varchar socketId PK "Unique socket connection ID"
+        varchar username "User's display name"
+        varchar roomId FK "Current room"
+        varchar role "teacher or student"
+        datetime connectedAt "Connection timestamp"
+    }
+
+    %% Relationships
+    USERS_LOCALSTORAGE ||--o{ STUDENT_NOTES : "creates"
+    ROOMS_EPHEMERAL ||--o{ SOCKET_CONNECTIONS : "contains"
+    SOCKET_CONNECTIONS }o--|| USERS_LOCALSTORAGE : "authenticated_as"
+
+    %% Notes
+    %% - USERS_LOCALSTORAGE: Data stored in browser, not in MySQL
+    %% - ROOMS_EPHEMERAL: Managed in-memory by Node.js server (Map object)
+    %% - SOCKET_CONNECTIONS: Ephemeral, managed by Socket.IO
+    %% - STUDENT_NOTES: Only persistent table in MySQL database

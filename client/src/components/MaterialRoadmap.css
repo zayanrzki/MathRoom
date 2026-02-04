@@ -1,0 +1,205 @@
+.material-roadmap-container {
+    background: rgba(0, 0, 0, 0.2);
+    /* Darker inner container */
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.roadmap-title {
+    margin-bottom: 1.5rem;
+    font-size: 1.1rem;
+    color: #ffd700;
+    /* Golden yellow for better visibility */
+    text-align: center;
+    font-weight: 800;
+}
+
+.roadmap-placeholder {
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-secondary);
+    font-style: italic;
+    border: 2px dashed rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+}
+
+.roadmap-visual {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 500px;
+    margin: 0 auto 2rem;
+    position: relative;
+    padding: 0 1rem;
+}
+
+.roadmap-step-wrapper {
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+.roadmap-step-wrapper:last-child {
+    flex: 0;
+}
+
+.roadmap-step {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid transparent;
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 2;
+    color: white;
+}
+
+.roadmap-step:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-5px);
+}
+
+.roadmap-step.active {
+    background: #1E5E38;
+    /* Green theme active */
+    box-shadow: 0 0 20px rgba(30, 94, 56, 0.5);
+    border-color: white;
+}
+
+.step-icon {
+    font-size: 1.5rem;
+    margin-bottom: 4px;
+}
+
+.step-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.roadmap-connector {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    flex-grow: 1;
+    margin: 0 -10px;
+    position: relative;
+    z-index: 1;
+}
+
+.roadmap-step.active+.roadmap-connector {
+    background: #1E5E38;
+}
+
+.level-detail-card {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border-left: 4px solid #1E5E38;
+}
+
+.detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 0.5rem;
+}
+
+.detail-header h4 {
+    margin: 0;
+    color: #ffd700;
+}
+
+.badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: bold;
+}
+
+.detail-section {
+    margin-bottom: 1rem;
+}
+
+.detail-section label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+    font-weight: bold;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+code {
+    display: block;
+    background: #1e293b;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.9rem;
+    color: white;
+    overflow-x: auto;
+}
+
+.formula {
+    color: #4ade80;
+    font-weight: bold;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.4s ease forwards;
+}
+
+/* Responsiveness for small screens */
+@media (max-width: 600px) {
+    .roadmap-step {
+        width: 65px;
+        height: 65px;
+    }
+
+    .step-icon {
+        font-size: 1.2rem;
+    }
+
+    .step-label {
+        font-size: 0.6rem;
+    }
+
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .material-roadmap-container {
+        padding: 1rem 0.75rem;
+    }
+
+    .roadmap-title {
+        font-size: 1rem;
+    }
+}
