@@ -33,8 +33,8 @@
     height: 100%;
     position: relative;
     overflow: hidden;
-    background: #ffffff;
-    /* Explicit white background for the canvas area */
+    background: transparent;
+    /* Allow child SmartCanvas to show its own background (grid) */
 }
 
 .actual-canvas-part.contracted {

@@ -10,6 +10,7 @@ import { StudentCamera, CameraToggle, StudentMicrophone, MicToggle } from '../co
 import MaterialRoadmap from '../components/MaterialRoadmap';
 import ImageCropModal from '../components/ImageCropModal';
 import '../components/VideoStream.css';
+import { supabase } from '../config/supabase';
 import { API_URL } from '../config/api';
 
 
@@ -194,10 +195,7 @@ export default function StudentRoom() {
 
   const handleSaveNote = async (title) => {
     try {
-      console.log('Attempting to save note...');
-      console.log('userEmail:', userEmail);
-      console.log('userName:', userName);
-      console.log('roomId:', roomId);
+      console.log('Attempting to save note to Supabase...');
 
       // Check if user is logged in
       if (!userEmail || !userName) {
@@ -222,36 +220,29 @@ export default function StudentRoom() {
       ctx.drawImage(canvas, 0, 0, 200, 150);
       const thumbnail = thumbnailCanvas.toDataURL('image/png');
 
-      console.log('Sending to API...');
-      // Save to database
-      const response = await fetch(`${API_URL}/api/notes`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          studentEmail: userEmail,
-          studentDisplayName: userName,
-          roomCode: roomId,
-          title: title,
-          canvasData: canvasData,
-          thumbnail: thumbnail
-        })
-      });
+      console.log('Inserting into Supabase student_notes...');
 
-      const data = await response.json();
-      console.log('API Response:', data);
+      const { error: insertError } = await supabase
+        .from('student_notes')
+        .insert([
+          {
+            student_email: userEmail,
+            student_display_name: userName,
+            room_code: roomId,
+            title: title || `Note from ${roomId}`,
+            canvas_data: canvasData,
+            thumbnail: thumbnail
+          }
+        ]);
 
-      if (data.success) {
-        console.log('Note saved successfully!');
-        alert('✅ Catatan berhasil disimpan!');
-      } else {
-        console.error('Failed to save note:', data.message);
-        alert('❌ Gagal menyimpan: ' + data.message);
-      }
+      if (insertError) throw insertError;
+
+      console.log('Note saved successfully!');
+      alert('✅ Catatan berhasil disimpan!');
+
     } catch (error) {
       console.error('Error saving note:', error);
-      alert('Gagal menyimpan catatan. Silakan coba lagi.');
+      alert('Gagal menyimpan catatan: ' + error.message);
     } finally {
       // Navigate based on role
       if (isViewer) {

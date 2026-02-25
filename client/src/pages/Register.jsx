@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { API_URL } from '../config/api';
+import { supabase } from '../config/supabase';
 
 
 export default function Register() {
@@ -52,30 +52,35 @@ export default function Register() {
         setLoading(true);
 
         try {
-            const response = await fetch(`${API_URL}/api/register`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    name: formData.name,
-                    email: formData.email,
-                    password: formData.password
-                }),
+            // 1. Sign up user in Supabase Auth
+            const { data: authData, error: authError } = await supabase.auth.signUp({
+                email: formData.email,
+                password: formData.password,
             });
 
-            const data = await response.json();
+            if (authError) throw authError;
 
-            if (response.ok) {
+            if (authData.user) {
+                // 2. Create profile in public.profiles table
+                const { error: profileError } = await supabase
+                    .from('profiles')
+                    .insert([
+                        {
+                            id: authData.user.id,
+                            name: formData.name,
+                            email: formData.email
+                        }
+                    ]);
+
+                if (profileError) throw profileError;
+
                 // Registration successful
-                alert('Registration successful! Please login.');
-                navigate('/');
-            } else {
-                setError(data.error || 'Registration failed');
+                alert('Pendaftaran berhasil! Silakan cek email kamu untuk konfirmasi (jika diaktifkan) atau langsung login.');
+                navigate('/login');
             }
         } catch (err) {
             console.error('Registration error:', err);
-            setError('Network error. Please try again.');
+            setError(err.message || 'Pendaftaran gagal. Silakan coba lagi.');
         } finally {
             setLoading(false);
         }

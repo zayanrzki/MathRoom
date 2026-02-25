@@ -21,101 +21,20 @@ app.use(express.json({ limit: '50mb' })); // Increase limit for base64 images
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Database connection
-const db = require('./db');
+const supabase = require('./supabase');
 
 // ===== AUTHENTICATION ENDPOINTS =====
 
 // User Registration
+// User Registration - Simplified as frontend handles Auth
 app.post('/api/register', async (req, res) => {
-    try {
-        const { name, email, password } = req.body;
-
-        // Validation
-        if (!name || !email || !password) {
-            return res.status(400).json({ error: 'All fields are required' });
-        }
-
-        if (password.length < 6) {
-            return res.status(400).json({ error: 'Password must be at least 6 characters' });
-        }
-
-        // Check if email already exists
-        const [existingUsers] = await db.query(
-            'SELECT id FROM users WHERE email = ?',
-            [email]
-        );
-
-        if (existingUsers.length > 0) {
-            return res.status(409).json({ error: 'Email already registered' });
-        }
-
-        // Hash password
-        const saltRounds = 10;
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-        // Insert new user
-        const [result] = await db.query(
-            'INSERT INTO users (name, email, password) VALUES (?, ?, ?)',
-            [name, email, hashedPassword]
-        );
-
-        console.log('✅ New user registered:', email);
-
-        res.status(201).json({
-            success: true,
-            message: 'Registration successful',
-            userId: result.insertId
-        });
-
-    } catch (error) {
-        console.error('Registration error:', error);
-        res.status(500).json({ error: 'Server error during registration' });
-    }
+    res.status(200).json({ message: 'Please use Supabase Auth on frontend' });
 });
 
 // User Login (with password verification)
+// User Login - Simplified as frontend handles Auth
 app.post('/api/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-
-        if (!email || !password) {
-            return res.status(400).json({ error: 'Email and password are required' });
-        }
-
-        // Find user
-        const [users] = await db.query(
-            'SELECT id, name, email, password FROM users WHERE email = ?',
-            [email]
-        );
-
-        if (users.length === 0) {
-            return res.status(401).json({ error: 'Invalid email or password' });
-        }
-
-        const user = users[0];
-
-        // Verify password
-        const passwordMatch = await bcrypt.compare(password, user.password);
-
-        if (!passwordMatch) {
-            return res.status(401).json({ error: 'Invalid email or password' });
-        }
-
-        console.log('✅ User logged in:', email);
-
-        res.json({
-            success: true,
-            user: {
-                id: user.id,
-                name: user.name,
-                email: user.email
-            }
-        });
-
-    } catch (error) {
-        console.error('Login error:', error);
-        res.status(500).json({ error: 'Server error during login' });
-    }
+    res.status(200).json({ message: 'Please use Supabase Auth on frontend' });
 });
 
 // ===== SESSION MANAGEMENT ENDPOINTS =====
@@ -129,17 +48,29 @@ app.post('/api/sessions/create', async (req, res) => {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
-        // Insert session to database
-        const [result] = await db.query(
-            'INSERT INTO sessions (room_code, teacher_email, teacher_name, topic, difficulty, max_students, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [roomCode, teacherEmail, teacherName, topic || '', difficulty || 'Medium', maxStudents || 30, 'active']
-        );
+        const { data, error } = await supabase
+            .from('sessions')
+            .insert([
+                {
+                    room_code: roomCode,
+                    teacher_email: teacherEmail,
+                    teacher_name: teacherName,
+                    topic: topic || '',
+                    difficulty: difficulty || 'Medium',
+                    max_students: parseInt(maxStudents) || 30,
+                    status: 'active'
+                }
+            ])
+            .select()
+            .single();
+
+        if (error) throw error;
 
         console.log('✅ Session created:', roomCode);
 
         res.status(201).json({
             success: true,
-            sessionId: result.insertId,
+            sessionId: data.id,
             roomCode
         });
 
@@ -158,25 +89,35 @@ app.post('/api/sessions/end', async (req, res) => {
             return res.status(400).json({ error: 'Room code required' });
         }
 
-        // Calculate duration
-        const [sessions] = await db.query(
-            'SELECT started_at FROM sessions WHERE room_code = ? AND status = ?',
-            [roomCode, 'active']
-        );
+        // Get started_at
+        const { data: session, error: fetchError } = await supabase
+            .from('sessions')
+            .select('started_at')
+            .eq('room_code', roomCode)
+            .eq('status', 'active')
+            .single();
 
-        if (sessions.length === 0) {
+        if (fetchError || !session) {
             return res.status(404).json({ error: 'Active session not found' });
         }
 
-        const startedAt = new Date(sessions[0].started_at);
+        const startedAt = new Date(session.started_at);
         const endedAt = new Date();
         const durationMinutes = Math.round((endedAt - startedAt) / 1000 / 60);
 
         // Update session
-        await db.query(
-            'UPDATE sessions SET status = ?, ended_at = ?, total_students = ?, duration_minutes = ? WHERE room_code = ? AND status = ?',
-            ['ended', endedAt, totalStudents || 0, durationMinutes, roomCode, 'active']
-        );
+        const { error: updateError } = await supabase
+            .from('sessions')
+            .update({
+                status: 'ended',
+                ended_at: endedAt,
+                total_students: totalStudents || 0,
+                duration_minutes: durationMinutes
+            })
+            .eq('room_code', roomCode)
+            .eq('status', 'active');
+
+        if (updateError) throw updateError;
 
         console.log(`✅ Session ended: ${roomCode} (${durationMinutes} minutes, ${totalStudents} students)`);
 
@@ -197,27 +138,24 @@ app.get('/api/sessions/history/:teacherEmail', async (req, res) => {
         const { teacherEmail } = req.params;
         const { limit = 50, offset = 0 } = req.query;
 
-        const [sessions] = await db.query(
-            `SELECT 
-                id, room_code, topic, difficulty, max_students, total_students,
-                status, started_at, ended_at, duration_minutes
-            FROM sessions 
-            WHERE teacher_email = ? 
-            ORDER BY started_at DESC 
-            LIMIT ? OFFSET ?`,
-            [teacherEmail, parseInt(limit), parseInt(offset)]
-        );
+        const { data: sessions, error } = await supabase
+            .from('sessions')
+            .select('*', { count: 'exact' })
+            .eq('teacher_email', teacherEmail)
+            .order('started_at', { ascending: false })
+            .range(parseInt(offset), parseInt(offset) + parseInt(limit) - 1);
 
-        // Get total count
-        const [countResult] = await db.query(
-            'SELECT COUNT(*) as total FROM sessions WHERE teacher_email = ?',
-            [teacherEmail]
-        );
+        if (error) throw error;
+
+        const { count } = await supabase
+            .from('sessions')
+            .select('*', { count: 'exact', head: true })
+            .eq('teacher_email', teacherEmail);
 
         res.json({
             success: true,
             sessions,
-            total: countResult[0].total,
+            total: count,
             limit: parseInt(limit),
             offset: parseInt(offset)
         });
@@ -275,14 +213,14 @@ app.get('/api/problems/:roomCode', async (req, res) => {
     try {
         const { roomCode } = req.params;
 
-        const [problems] = await db.query(
-            `SELECT id, problem_number, topic, difficulty, question_text, 
-                    option_a, option_b, option_c, option_d, explanation
-            FROM session_problems 
-            WHERE room_code = ? 
-            ORDER BY problem_number ASC`,
-            [roomCode]
-        );
+        const { data: problems, error } = await supabase
+            .from('session_problems')
+            .select(`id, problem_number, topic, difficulty, question_text, 
+                    option_a, option_b, option_c, option_d, explanation`)
+            .eq('room_code', roomCode)
+            .order('problem_number', { ascending: true });
+
+        if (error) throw error;
 
         res.json({
             success: true,
@@ -306,29 +244,32 @@ app.post('/api/problems/submit', async (req, res) => {
         }
 
         // Get correct answer
-        const [problems] = await db.query(
-            'SELECT correct_answer FROM session_problems WHERE id = ?',
-            [problemId]
-        );
+        const { data: problem, error: probError } = await supabase
+            .from('session_problems')
+            .select('correct_answer')
+            .eq('id', problemId)
+            .single();
 
-        if (problems.length === 0) {
+        if (probError || !problem) {
             return res.status(404).json({ error: 'Problem not found' });
         }
 
-        const correctAnswer = problems[0].correct_answer;
+        const correctAnswer = problem.correct_answer;
         const isCorrect = selectedAnswer === correctAnswer;
 
-        // Save answer
-        await db.query(
-            `INSERT INTO student_answers 
-            (problem_id, student_email, student_name, selected_answer, is_correct, scratch_canvas_data) 
-            VALUES (?, ?, ?, ?, ?, ?)
-            ON DUPLICATE KEY UPDATE 
-            selected_answer = VALUES(selected_answer),
-            is_correct = VALUES(is_correct),
-            scratch_canvas_data = VALUES(scratch_canvas_data)`,
-            [problemId, studentEmail, studentName, selectedAnswer, isCorrect, scratchCanvas]
-        );
+        // Save answer (Upsert)
+        const { error: upsertError } = await supabase
+            .from('student_answers')
+            .upsert({
+                problem_id: problemId,
+                student_email: studentEmail,
+                student_name: studentName,
+                selected_answer: selectedAnswer,
+                is_correct: isCorrect,
+                scratch_canvas_data: scratchCanvas
+            }, { onConflict: 'problem_id, student_email' });
+
+        if (upsertError) throw upsertError;
 
         console.log(`📝 Answer submitted: ${studentName} - ${isCorrect ? 'Correct' : 'Wrong'}`);
 
@@ -349,22 +290,39 @@ app.get('/api/problems/scores/:roomCode', async (req, res) => {
     try {
         const { roomCode } = req.params;
 
-        const [scores] = await db.query(
-            `SELECT 
-                sa.student_name,
-                sa.student_email,
-                COUNT(*) as total_answered,
-                SUM(CASE WHEN sa.is_correct = 1 THEN 1 ELSE 0 END) as correct_count
-            FROM student_answers sa
-            JOIN session_problems sp ON sa.problem_id = sp.id
-            WHERE sp.room_code = ?
-            GROUP BY sa.student_email, sa.student_name`,
-            [roomCode]
-        );
+        // Note: Complex grouping is harder in Supabase client but we can use a raw RPC or just post-process
+        // For simplicity, let's fetch all answers for this room and group in JS
+        const { data, error } = await supabase
+            .from('student_answers')
+            .select(`
+                student_name,
+                student_email,
+                is_correct,
+                session_problems!inner(room_code)
+            `)
+            .eq('session_problems.room_code', roomCode);
+
+        if (error) throw error;
+
+        // Grouping
+        const scoreBoard = {};
+        data.forEach(result => {
+            const key = result.student_email;
+            if (!scoreBoard[key]) {
+                scoreBoard[key] = {
+                    student_name: result.student_name,
+                    student_email: result.student_email,
+                    total_answered: 0,
+                    correct_count: 0
+                };
+            }
+            scoreBoard[key].total_answered++;
+            if (result.is_correct) scoreBoard[key].correct_count++;
+        });
 
         res.json({
             success: true,
-            scores
+            scores: Object.values(scoreBoard)
         });
 
     } catch (error) {
@@ -402,16 +360,28 @@ app.post('/api/notes', async (req, res) => {
         const noteTitle = title || `Note from ${roomCode}`;
         const displayName = studentDisplayName || studentEmail.split('@')[0];
 
-        console.log('Inserting to database...');
-        const [result] = await db.query(
-            'INSERT INTO student_notes (student_email, student_display_name, room_code, title, canvas_data, thumbnail) VALUES (?, ?, ?, ?, ?, ?)',
-            [studentEmail, displayName, roomCode, noteTitle, canvasData, thumbnail]
-        );
+        console.log('Inserting to Supabase...');
+        const { data, error } = await supabase
+            .from('student_notes')
+            .insert([
+                {
+                    student_email: studentEmail,
+                    student_display_name: displayName,
+                    room_code: roomCode,
+                    title: noteTitle,
+                    canvas_data: canvasData,
+                    thumbnail: thumbnail
+                }
+            ])
+            .select()
+            .single();
 
-        console.log('✅ Note saved! ID:', result.insertId);
+        if (error) throw error;
+
+        console.log('✅ Note saved! ID:', data.id);
         res.json({
             success: true,
-            noteId: result.insertId,
+            noteId: data.id,
             message: 'Note saved successfully'
         });
     } catch (error) {
@@ -430,10 +400,13 @@ app.get('/api/notes/:studentEmail', async (req, res) => {
     try {
         const { studentEmail } = req.params;
 
-        const [notes] = await db.query(
-            'SELECT id, student_email, student_display_name, room_code, title, thumbnail, created_at FROM student_notes WHERE student_email = ? ORDER BY created_at DESC',
-            [studentEmail]
-        );
+        const { data: notes, error } = await supabase
+            .from('student_notes')
+            .select('id, student_email, student_display_name, room_code, title, thumbnail, created_at')
+            .eq('student_email', studentEmail)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
 
         res.json({
             success: true,
@@ -454,12 +427,13 @@ app.get('/api/notes/view/:noteId', async (req, res) => {
     try {
         const { noteId } = req.params;
 
-        const [notes] = await db.query(
-            'SELECT * FROM student_notes WHERE id = ?',
-            [noteId]
-        );
+        const { data: note, error } = await supabase
+            .from('student_notes')
+            .select('*')
+            .eq('id', noteId)
+            .single();
 
-        if (notes.length === 0) {
+        if (error || !note) {
             return res.status(404).json({
                 success: false,
                 message: 'Note not found'
@@ -468,7 +442,7 @@ app.get('/api/notes/view/:noteId', async (req, res) => {
 
         res.json({
             success: true,
-            note: notes[0]
+            note
         });
     } catch (error) {
         console.error('Error fetching note:', error);
@@ -485,17 +459,12 @@ app.delete('/api/notes/:noteId', async (req, res) => {
     try {
         const { noteId } = req.params;
 
-        const [result] = await db.query(
-            'DELETE FROM student_notes WHERE id = ?',
-            [noteId]
-        );
+        const { error } = await supabase
+            .from('student_notes')
+            .delete()
+            .eq('id', noteId);
 
-        if (result.affectedRows === 0) {
-            return res.status(404).json({
-                success: false,
-                message: 'Note not found'
-            });
-        }
+        if (error) throw error;
 
         res.json({
             success: true,

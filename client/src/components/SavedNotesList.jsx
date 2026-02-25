@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { API_URL } from '../config/api';
+import { supabase } from '../config/supabase';
 
 
 export default function SavedNotesList({ studentEmail }) {
@@ -14,14 +14,21 @@ export default function SavedNotesList({ studentEmail }) {
     }, [studentEmail]);
 
     const fetchNotes = async () => {
+        if (!supabase) {
+            console.error('Supabase client not initialized');
+            setLoading(false);
+            return;
+        }
         try {
             setLoading(true);
-            const response = await fetch(`${API_URL}/api/notes/${encodeURIComponent(studentEmail)}`);
-            const data = await response.json();
+            const { data, error } = await supabase
+                .from('student_notes')
+                .select('id, student_email, student_display_name, room_code, title, thumbnail, created_at')
+                .eq('student_email', studentEmail)
+                .order('created_at', { ascending: false });
 
-            if (data.success) {
-                setNotes(data.notes);
-            }
+            if (error) throw error;
+            setNotes(data || []);
         } catch (error) {
             console.error('Error fetching notes:', error);
         } finally {
@@ -31,17 +38,28 @@ export default function SavedNotesList({ studentEmail }) {
 
     const handleViewNote = async (noteId) => {
         try {
-            const response = await fetch(`${API_URL}/api/notes/view/${noteId}`);
-            const data = await response.json();
+            const { data: note, error } = await supabase
+                .from('student_notes')
+                .select('*')
+                .eq('id', noteId)
+                .single();
 
-            if (data.success && data.note.canvas_data) {
+            if (error) throw error;
+
+            if (note && note.canvas_data) {
                 // Open image in new tab - simple and clear!
                 const newTab = window.open();
+
+                // If canvas_data is JSON (from smart canvas), we might need to handle it.
+                // But looking at previous code, it seems it was stored as dataURL.
+                // In Postgres we might store it as JSONB if it's paths, but if it's image, it's text.
+                const imageSrc = typeof note.canvas_data === 'string' ? note.canvas_data : JSON.stringify(note.canvas_data);
+
                 newTab.document.write(`
                     <!DOCTYPE html>
                     <html>
                     <head>
-                        <title>${data.note.title} - Math Room</title>
+                        <title>${note.title} - Math Room</title>
                         <style>
                             body {
                                 margin: 0;
@@ -113,10 +131,10 @@ export default function SavedNotesList({ studentEmail }) {
                     <body>
                         <div class="header">
                             <div class="title-area">
-                                <h1>📝 ${data.note.title}</h1>
+                                <h1>📝 ${note.title}</h1>
                                 <div class="meta">
-                                    📚 Room: ${data.note.room_code} &nbsp;•&nbsp; 
-                                    🕒 ${new Date(data.note.created_at).toLocaleString('id-ID')}
+                                    📚 Room: ${note.room_code} &nbsp;•&nbsp; 
+                                    🕒 ${new Date(note.created_at).toLocaleString('id-ID')}
                                 </div>
                             </div>
                             <button onclick="downloadImage()" class="download-btn">
@@ -124,13 +142,13 @@ export default function SavedNotesList({ studentEmail }) {
                             </button>
                         </div>
                         <div class="img-container">
-                            <img id="noteImage" src="${data.note.canvas_data}" alt="${data.note.title}">
+                            <img id="noteImage" src="${imageSrc}" alt="${note.title}">
                         </div>
                         <script>
                             function downloadImage() {
                                 const link = document.createElement('a');
                                 link.href = document.getElementById('noteImage').src;
-                                link.download = "${data.note.title.replace(/\s+/g, '_')}_MathRoom.png";
+                                link.download = "${note.title.replace(/\s+/g, '_')}_MathRoom.png";
                                 link.click();
                             }
                         </script>
@@ -147,12 +165,17 @@ export default function SavedNotesList({ studentEmail }) {
 
     const handleDownloadNote = async (noteId, noteTitle) => {
         try {
-            const response = await fetch(`${API_URL}/api/notes/view/${noteId}`);
-            const data = await response.json();
+            const { data: note, error } = await supabase
+                .from('student_notes')
+                .select('canvas_data')
+                .eq('id', noteId)
+                .single();
 
-            if (data.success && data.note.canvas_data) {
+            if (error) throw error;
+
+            if (note && note.canvas_data) {
                 const link = document.createElement('a');
-                link.href = data.note.canvas_data;
+                link.href = note.canvas_data;
                 link.download = `${noteTitle.replace(/\s+/g, '_')}_MathRoom.png`;
                 document.body.appendChild(link);
                 link.click();
@@ -168,16 +191,14 @@ export default function SavedNotesList({ studentEmail }) {
         if (!confirm(`Hapus catatan "${noteTitle}"?`)) return;
 
         try {
-            const response = await fetch(`${API_URL}/api/notes/${noteId}`, {
-                method: 'DELETE'
-            });
-            const data = await response.json();
+            const { error } = await supabase
+                .from('student_notes')
+                .delete()
+                .eq('id', noteId);
 
-            if (data.success) {
-                setNotes(notes.filter(note => note.id !== noteId));
-            } else {
-                alert('Gagal menghapus catatan');
-            }
+            if (error) throw error;
+
+            setNotes(notes.filter(note => note.id !== noteId));
         } catch (error) {
             console.error('Error deleting note:', error);
             alert('Gagal menghapus catatan');

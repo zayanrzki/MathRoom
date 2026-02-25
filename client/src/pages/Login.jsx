@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { API_URL } from '../config/api';
+import { supabase } from '../config/supabase';
 
 
 export default function Login() {
@@ -32,31 +32,42 @@ export default function Login() {
 
         setLoading(true);
 
+        if (!supabase) {
+            setError('Supabase tidak terhubung. Periksa konfigurasi .env');
+            setLoading(false);
+            return;
+        }
+
         try {
-            const response = await fetch(`${API_URL}/api/login`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, password }),
+            // 1. Sign in with Supabase
+            const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+                email,
+                password,
             });
 
-            const data = await response.json();
+            if (authError) throw authError;
 
-            if (response.ok) {
-                // Save to localStorage
-                localStorage.setItem('userEmail', data.user.email);
-                localStorage.setItem('userName', data.user.name);
-                localStorage.setItem('userId', data.user.id);
+            if (authData.user) {
+                // 2. Fetch profile info
+                const { data: profileData, error: profileError } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', authData.user.id)
+                    .single();
+
+                if (profileError) throw profileError;
+
+                // Save to localStorage (Keeping legacy support for now)
+                localStorage.setItem('userEmail', authData.user.email);
+                localStorage.setItem('userName', profileData.name);
+                localStorage.setItem('userId', authData.user.id);
 
                 // Redirect to home
                 navigate('/');
-            } else {
-                setError(data.error || 'Login gagal');
             }
         } catch (err) {
             console.error('Login error:', err);
-            setError('Terjadi kesalahan jaringan');
+            setError(err.message || 'Login gagal. Cek kembali email dan password kamu.');
         } finally {
             setLoading(false);
         }

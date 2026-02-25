@@ -3,7 +3,7 @@
 
 class ProblemGenerator {
     constructor() {
-        this.db = require('../db');
+        this.supabase = require('../supabase');
         this.problemCounter = 0; // Counter for unique seeds
     }
 
@@ -30,20 +30,31 @@ class ProblemGenerator {
                 // Increment counter for next problem's unique seed
                 this.problemCounter++;
 
-                // Save to database
-                const [result] = await this.db.query(
-                    `INSERT INTO session_problems 
-                    (session_id, room_code, problem_number, topic, difficulty, 
-                     question_text, option_a, option_b, option_c, option_d, 
-                     correct_answer, explanation) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                    [sessionId, roomCode, i + 1, topic, difficulty,
-                        problem.question, problem.options.A, problem.options.B,
-                        problem.options.C, problem.options.D, problem.correctAnswer,
-                        problem.explanation]
-                );
+                // Save to Supabase
+                const { data, error: insertError } = await this.supabase
+                    .from('session_problems')
+                    .insert([
+                        {
+                            session_id: sessionId,
+                            room_code: roomCode,
+                            problem_number: i + 1,
+                            topic: topic,
+                            difficulty: difficulty,
+                            question_text: problem.question,
+                            option_a: problem.options.A,
+                            option_b: problem.options.B,
+                            option_c: problem.options.C,
+                            option_d: problem.options.D,
+                            correct_answer: problem.correctAnswer,
+                            explanation: problem.explanation
+                        }
+                    ])
+                    .select()
+                    .single();
 
-                problems.push({ id: result.insertId, number: i + 1, ...problem });
+                if (insertError) throw insertError;
+
+                problems.push({ id: data.id, number: i + 1, ...problem });
                 console.log(`✅ Generated problem ${i + 1}/${count}: ${topic}`);
 
             } catch (error) {

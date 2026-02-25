@@ -1004,18 +1004,22 @@ const SmartCanvas = forwardRef(({ roomId, role, brushSize = 3, brushColor = '#00
         deleteActiveObject: () => {
             if (!fabricCanvas.current) return;
             const canvas = fabricCanvas.current;
-            const activeObject = canvas.getActiveObject();
+            const activeObjects = canvas.getActiveObjects();
 
-            if (activeObject) {
-                console.log('🗑️ Deleting active object via UI');
-                canvas.remove(activeObject);
-                canvas.renderAll();
+            if (activeObjects && activeObjects.length > 0) {
+                console.log(`🗑️ Deleting ${activeObjects.length} active object(s) via UI`);
 
-                // Emit delete event to other users
-                socket.emit('object_deleted', {
-                    roomId,
-                    objectId: activeObject.toJSON()
+                activeObjects.forEach((obj) => {
+                    canvas.remove(obj);
+                    // Emit delete event for each object
+                    socket.emit('object_deleted', {
+                        roomId,
+                        objectId: obj.toJSON()
+                    });
                 });
+
+                canvas.discardActiveObject();
+                canvas.renderAll();
             }
         }
     }));
@@ -1048,6 +1052,19 @@ const SmartCanvas = forwardRef(({ roomId, role, brushSize = 3, brushColor = '#00
         });
 
         fabricCanvas.current = canvas;
+
+        // Sync CSS grid with canvas zoom and pan
+        canvas.on('after:render', () => {
+            const vpt = canvas.viewportTransform;
+            if (vpt && containerRef.current) {
+                const zoom = vpt[0];
+                const x = vpt[4];
+                const y = vpt[5];
+                const baseSize = 30; // Base grid size in pixels
+                containerRef.current.style.backgroundSize = `${baseSize * zoom}px ${baseSize * zoom}px`;
+                containerRef.current.style.backgroundPosition = `${x}px ${y}px`;
+            }
+        });
 
         if (role === 'student') {
             canvas.isDrawingMode = true;
@@ -1269,7 +1286,6 @@ const SmartCanvas = forwardRef(({ roomId, role, brushSize = 3, brushColor = '#00
         }
     }, [selectionMode, role, eraserMode, textMode]);
 
-    // Keyboard delete handler for selected objects
     useEffect(() => {
         const handleKeyDown = (e) => {
             if ((e.key === 'Delete' || e.key === 'Backspace') &&
@@ -1277,19 +1293,22 @@ const SmartCanvas = forwardRef(({ roomId, role, brushSize = 3, brushColor = '#00
                 fabricCanvas.current &&
                 role === 'student') {
 
-                const activeObject = fabricCanvas.current.getActiveObject();
-                if (activeObject) {
-                    console.log('🗑️ Deleting selected object');
-                    fabricCanvas.current.remove(activeObject);
-                    fabricCanvas.current.renderAll();
+                const activeObjects = fabricCanvas.current.getActiveObjects();
+                if (activeObjects && activeObjects.length > 0) {
+                    console.log(`🗑️ Deleting ${activeObjects.length} selected object(s) via Keyboard`);
 
-                    // Emit delete event to other users
-                    socket.emit('object_deleted', {
-                        roomId,
-                        objectId: activeObject.toJSON()
+                    activeObjects.forEach((obj) => {
+                        fabricCanvas.current.remove(obj);
+                        // Emit delete event to other users
+                        socket.emit('object_deleted', {
+                            roomId,
+                            objectId: obj.toJSON()
+                        });
                     });
-                }
 
+                    fabricCanvas.current.discardActiveObject();
+                    fabricCanvas.current.renderAll();
+                }
                 // Prevent default browser behavior
                 e.preventDefault();
             }
