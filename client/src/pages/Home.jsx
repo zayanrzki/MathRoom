@@ -5,6 +5,7 @@ import { socket } from '../socket';
 import SavedNotesList from '../components/SavedNotesList';
 import MaterialRoadmap from '../components/MaterialRoadmap';
 import { getMaterialTopics } from '../utils/materialsData';
+import { API_URL } from '../config/api';
 
 export default function Home() {
     const [roomCode, setRoomCode] = useState('');
@@ -95,7 +96,7 @@ export default function Home() {
             if (enableProblems) {
                 console.log('🎲 Generating problems...');
                 try {
-                    await fetch(`http://${window.location.hostname}:3001/api/problems/generate`, {
+                    await fetch(`${API_URL}/api/problems/generate`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({

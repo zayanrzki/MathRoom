@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { socket } from '../socket';
+import { API_URL } from '../config/api';
 import MiniCanvas from '../components/MiniCanvas';
 import { TeacherVideoView, TeacherAudioPlayer } from '../components/VideoStream';
 import '../components/VideoStream.css';
@@ -23,7 +24,7 @@ export default function TeacherDashboard() {
     const leaveSession = async () => {
         if (confirm("Are you sure you want to end the session?")) {
             try {
-                const response = await fetch(`http://${window.location.hostname}:3001/api/sessions/end`, {
+                const response = await fetch(`${API_URL}/api/sessions/end`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
